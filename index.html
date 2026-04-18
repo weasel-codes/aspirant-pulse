@@ -2,43 +2,180 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Mini App - UPSC/PCS Exam Preparation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>AspirantPulseAI</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        :root {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #212121;
+            --tg-theme-button-color: #007aff;
+            --tg-theme-secondary-bg-color: #f1f1f4;
+            --accent-gold: #FFD700;
+            --card-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; height: 100vh;
+        }
+
+        /* Screen Transitions */
+        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease-in; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Onboarding Styles */
+        .hero-title { font-size: 28px; font-weight: 800; margin-top: 40px; text-align: center; color: var(--tg-theme-button-color); }
+        .hero-sub { text-align: center; opacity: 0.6; margin-bottom: 40px; }
+        
+        .choice-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 20px; padding: 25px; margin-bottom: 15px;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.2s; border: 2px solid transparent; cursor: pointer;
+        }
+        .choice-card:active { transform: scale(0.98); border-color: var(--tg-theme-button-color); }
+        .choice-card h3 { margin: 0; font-size: 18px; }
+        .choice-icon { font-size: 32px; }
+
+        /* Dashboard Styles */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .status-badge { background: #E3F2FD; color: #1976D2; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+
+        .tabs { display: flex; background: var(--tg-theme-secondary-bg-color); border-radius: 12px; padding: 4px; margin: 15px 20px; }
+        .tab-btn { flex: 1; border: none; padding: 10px; border-radius: 10px; background: transparent; color: var(--tg-theme-text-color); font-weight: 600; cursor: pointer; }
+        .tab-btn.active { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+        .news-container { padding: 0 20px 80px 20px; }
+        .news-card {
+            background: white; border-radius: 18px; padding: 18px; margin-bottom: 15px;
+            box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,0.03);
+        }
+        .gs-tag { 
+            display: inline-block; padding: 4px 10px; border-radius: 8px; 
+            font-size: 11px; font-weight: 800; margin-bottom: 10px;
+            background: #f0f0f0; color: #555;
+        }
+        .news-headline { font-size: 18px; font-weight: 700; line-height: 1.4; margin-bottom: 10px; }
+        .news-summary { font-size: 14px; line-height: 1.6; opacity: 0.8; }
+        
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; height: 65px;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        .nav-item { text-align: center; opacity: 0.5; font-size: 10px; }
+        .nav-item.active { opacity: 1; color: var(--tg-theme-button-color); }
+        .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>UPSC/PCS Exam Preparation Mini App</h1>
-    </header>
-    <main>
-        <section id="goal-selection">
-            <h2>Select Your Goal</h2>
-            <form>
-                <label>
-                    <input type="radio" name="goal" value="upsc"> UPSC
-                </label>
-                <label>
-                    <input type="radio" name="goal" value="pcs"> PCS
-                </label>
-            </form>
-        </section>
-        <section id="state-selection">
-            <h2>Select Your State</h2>
-            <form>
-                <select name="state">
-                    <option value="state1">State 1</option>
-                    <option value="state2">State 2</option>
-                    <option value="state3">State 3</option>
-                </select>
-            </form>
-        </section>
-        <section id="news-dashboard">
-            <h2>Latest News</h2>
-            <ul>
-                <li>News Article 1</li>
-                <li>News Article 2</li>
-                <li>News Article 3</li>
-            </ul>
-        </section>
-    </main>
+
+    <!-- SCREEN 1: Goal -->
+    <div id="screen-goal" class="screen active">
+        <div class="hero-title">AspirantPulse</div>
+        <div class="hero-sub">Select your target goal to begin</div>
+        <div class="choice-card" onclick="selectGoal('UPSC')">
+            <div><h3>🇮🇳 UPSC CSE</h3><small>National & International Focus</small></div>
+            <span class="choice-icon">🎯</span>
+        </div>
+        <div class="choice-card" onclick="selectGoal('PCS')">
+            <div><h3>🏛️ State PCS</h3><small>State Specific Current Affairs</small></div>
+            <span class="choice-icon">📍</span>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: State Picker -->
+    <div id="screen-state" class="screen">
+        <h2>Target State</h2>
+        <div class="choice-card" onclick="selectState('Uttar Pradesh')"><h3>UPPSC</h3><span>➡️</span></div>
+        <div class="choice-card" onclick="selectState('Bihar')"><h3>BPSC</h3><span>➡️</span></div>
+        <div class="choice-card" onclick="selectState('Rajasthan')"><h3>RAS</h3><span>➡️</span></div>
+        <div class="choice-card" onclick="selectState('MP')"><h3>MPPSC</h3><span>➡️</span></div>
+    </div>
+
+    <!-- SCREEN 3: Dashboard -->
+    <div id="screen-dashboard" class="screen" style="padding:0;">
+        <div class="header">
+            <b id="user-goal">UPSC Feed</b>
+            <span class="status-badge">LIVE UPDATES</span>
+        </div>
+        
+        <div class="tabs">
+            <button id="tab1" class="tab-btn active" onclick="switchTab(1)">Highlights</button>
+            <button id="tab2" class="tab-btn" onclick="switchTab(2)">My Syllabus</button>
+        </div>
+
+        <div id="news-list" class="news-container">
+            <!-- News injected here -->
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active"><span class="nav-icon">📰</span>Feed</div>
+            <div class="nav-item"><span class="nav-icon">🔖</span>Saved</div>
+            <div class="nav-item"><span class="nav-icon">🏆</span>Quizzes</div>
+            <div class="nav-item"><span class="nav-icon">👤</span>Profile</div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let goal = '';
+        let state = '';
+
+        function selectGoal(choice) {
+            goal = choice;
+            if (choice === 'UPSC') {
+                document.getElementById('user-goal').innerText = "UPSC Analyst";
+                showScreen('screen-dashboard');
+                loadNews();
+            } else {
+                showScreen('screen-state');
+            }
+        }
+
+        function selectState(st) {
+            state = st;
+            document.getElementById('user-goal').innerText = state + " PCS";
+            showScreen('screen-dashboard');
+            loadNews();
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function loadNews() {
+            const list = document.getElementById('news-list');
+            list.innerHTML = `
+                <div class="news-card">
+                    <span class="gs-tag" style="background:#E8F5E9; color:#2E7D32;">GS PAPER 2</span>
+                    <div class="news-headline">Supreme Court ruling on Privacy vs. National Security</div>
+                    <div class="news-summary">A 3-judge bench has clarified that digital data protection must align with the Puttaswamy guidelines...</div>
+                </div>
+                <div class="news-card">
+                    <span class="gs-tag" style="background:#FFF3E0; color:#EF6C00;">ECONOMY</span>
+                    <div class="news-headline">RBI Monetary Policy: Repo Rate remains unchanged at 6.5%</div>
+                    <div class="news-summary">Focus remains on "Withdrawal of Accommodation" to align inflation with the 4% target...</div>
+                </div>
+            `;
+        }
+
+        function switchTab(n) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab' + n).classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    </script>
 </body>
 </html>
