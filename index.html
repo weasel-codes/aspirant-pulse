@@ -55,6 +55,32 @@
 
         /* Loader */
         .loader { text-align: center; padding: 40px; opacity: 0.6; font-style: italic; }
+
+        /* Grid for states */
+        .state-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns */
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .state-btn {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: 0.2s;
+        }
+        
+        .state-btn:active {
+            background: var(--tg-theme-button-color);
+            color: white;
+        }
+
     </style>
 </head>
 <body>
@@ -76,22 +102,45 @@
     </div>
 
     <!-- SCREEN 2: State Selection -->
+    <!-- SCREEN 2: All 28 States -->
     <div id="screen-states" class="screen">
         <div class="hero-title">Select State</div>
-        <div class="hero-sub">Choose your specific state PCS</div>
+        <div class="hero-sub">Choose your target State PCS</div>
         
-        <div class="btn" onclick="fetchNews('PCS', 'UP')">
-            <span class="btn-text">Uttar Pradesh (UPPSC)</span>
-            <span class="btn-icon">🦁</span>
+        <div class="state-grid">
+            <div class="state-btn" onclick="fetchNews('PCS', 'Andhra Pradesh')">Andhra Pradesh</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Arunachal Pradesh')">Arunachal Pradesh</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Assam')">Assam</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Bihar')">Bihar</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Chhattisgarh')">Chhattisgarh</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Goa')">Goa</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Gujarat')">Gujarat</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Haryana')">Haryana</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Himachal Pradesh')">Himachal Pradesh</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Jharkhand')">Jharkhand</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Karnataka')">Karnataka</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Kerala')">Kerala</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Madhya Pradesh')">Madhya Pradesh</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Maharashtra')">Maharashtra</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Manipur')">Manipur</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Meghalaya')">Meghalaya</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Mizoram')">Mizoram</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Nagaland')">Nagaland</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Odisha')">Odisha</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Punjab')">Punjab</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Rajasthan')">Rajasthan</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Sikkim')">Sikkim</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Tamil Nadu')">Tamil Nadu</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Telangana')">Telangana</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Tripura')">Tripura</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Uttar Pradesh')">Uttar Pradesh</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'Uttarakhand')">Uttarakhand</div>
+            <div class="state-btn" onclick="fetchNews('PCS', 'West Bengal')">West Bengal</div>
         </div>
-        
-        <div class="btn" onclick="fetchNews('PCS', 'Bihar')">
-            <span class="btn-text">Bihar (BPSC)</span>
-            <span class="btn-icon">☸️</span>
-        </div>
-
-        <button style="width: 100%; padding: 12px; border: none; background: none; color: var(--tg-theme-button-color); font-weight: 600;" onclick="showScreen('screen-main')">← Back to Exams</button>
+    
+        <button style="width: 100%; padding: 15px; border: none; background: none; color: var(--tg-theme-button-color); font-weight: 700;" onclick="showScreen('screen-main')">← Back to Exams</button>
     </div>
+
 
     <!-- SCREEN 3: News Feed -->
     <div id="screen-news" class="screen">
