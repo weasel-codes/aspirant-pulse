@@ -22,12 +22,15 @@
             color: var(--tg-theme-text-color);
             margin: 0; padding: 0;
             display: flex; flex-direction: column; height: 100vh;
+            overflow-x: hidden;
         }
 
+        /* Screen Transitions */
         .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease-in; }
         .active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Onboarding Styles */
         .hero-title { font-size: 28px; font-weight: 800; margin-top: 40px; text-align: center; color: var(--tg-theme-button-color); }
         .hero-sub { text-align: center; opacity: 0.6; margin-bottom: 40px; }
         
@@ -41,6 +44,7 @@
         .choice-card h3 { margin: 0; font-size: 18px; }
         .choice-icon { font-size: 32px; }
 
+        /* Dashboard Styles */
         .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .status-badge { background: #E3F2FD; color: #1976D2; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
 
@@ -61,6 +65,7 @@
         .news-headline { font-size: 18px; font-weight: 700; line-height: 1.4; margin-bottom: 10px; }
         .news-summary { font-size: 14px; line-height: 1.6; opacity: 0.8; }
         
+        /* Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; width: 100%; height: 65px;
             background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
@@ -74,6 +79,7 @@
 </head>
 <body>
 
+    <!-- SCREEN 1: Goal Selection -->
     <div id="screen-goal" class="screen active">
         <div class="hero-title">AspirantPulse</div>
         <div class="hero-sub">Select your target goal to begin</div>
@@ -87,6 +93,7 @@
         </div>
     </div>
 
+    <!-- SCREEN 2: State Picker -->
     <div id="screen-state" class="screen">
         <h2>Target State</h2>
         <div class="choice-card" onclick="selectState('UP')"><h3>UPPSC (Uttar Pradesh)</h3><span>➡️</span></div>
@@ -95,18 +102,23 @@
         <div class="choice-card" onclick="selectState('MP')"><h3>MPPSC (MP)</h3><span>➡️</span></div>
     </div>
 
+    <!-- SCREEN 3: News Dashboard -->
     <div id="screen-dashboard" class="screen" style="padding:0;">
         <div class="header">
-            <b id="user-goal">UPSC Feed</b>
+            <b id="user-goal">Feed</b>
             <span class="status-badge">LIVE UPDATES</span>
         </div>
+        
         <div class="tabs">
             <button id="tab1" class="tab-btn active" onclick="switchTab(1)">Highlights</button>
             <button id="tab2" class="tab-btn" onclick="switchTab(2)">My Syllabus</button>
         </div>
+
         <div id="news-list" class="news-container">
-            <p style="text-align:center;">Loading daily analyst briefs...</p>
+            <p style="text-align:center; padding-top:20px;">Loading news...</p>
         </div>
+
+        <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <div class="nav-item active"><span class="nav-icon">📰</span>Feed</div>
             <div class="nav-item"><span class="nav-icon">🔖</span>Saved</div>
@@ -126,7 +138,9 @@
 
         function selectGoal(choice) {
             goal = choice;
+            // Vibrate phone on click
             tg.HapticFeedback.impactOccurred('medium');
+            
             if (choice === 'UPSC') {
                 document.getElementById('user-goal').innerText = "UPSC Analyst";
                 showScreen('screen-dashboard');
@@ -149,31 +163,35 @@
             document.getElementById(id).classList.add('active');
         }
 
-        // FIXED: Real Fetch from your Railway Backend
+        // FIXED: Fetching from your REAL Railway backend
         async function loadNews() {
             const list = document.getElementById('news-list');
-            list.innerHTML = '<p style="text-align:center;">Analyzing news for your syllabus...</p>';
+            list.innerHTML = '<p style="text-align:center; padding-top:20px;">Analyzing latest briefs...</p>';
             
             try {
-                // Change the URL to your ACTUAL Railway Domain
+                // FIXED URL: Includes the /news path and your production domain
                 const railwayUrl = `https://railway.app{goal}&state=${state}`;
+                
                 const response = await fetch(railwayUrl);
                 const newsData = await response.json();
 
-                if (newsData.length === 0) {
-                    list.innerHTML = '<p style="text-align:center;">No news processed yet. Run agent.py!</p>';
+                if (!newsData || newsData.length === 0) {
+                    list.innerHTML = '<p style="text-align:center; padding-top:20px;">No news found. Did you run the agent script?</p>';
                     return;
                 }
 
+                // Render cards
                 list.innerHTML = newsData.map(news => `
                     <div class="news-card">
-                        <span class="gs-tag" style="background:#E8F5E9; color:#2E7D32;">${news.gs_paper || 'General'}</span>
+                        <span class="gs-tag">${news.gs_paper || 'GS-General'}</span>
                         <div class="news-headline">${news.headline}</div>
                         <div class="news-summary">${news.ai_summary}</div>
                     </div>
                 `).join('');
+
             } catch (error) {
-                list.innerHTML = '<p style="text-align:center; color:red;">Connection error. Check Railway logs!</p>';
+                console.error("Error loading news:", error);
+                list.innerHTML = '<p style="text-align:center; color:red; padding-top:20px;">Connection error. Ensure Railway is Active and CORS is enabled.</p>';
             }
         }
 
@@ -181,7 +199,7 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab' + n).classList.add('active');
             tg.HapticFeedback.impactOccurred('light');
-            loadNews();
+            loadNews(); // Refresh news when switching tabs
         }
     </script>
 </body>
