@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>AspirantPulse AI</title>
-    <!-- Telegram WebApp SDK -->
+    <!-- Official Telegram Mini App SDK (2026 Edition) -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
@@ -19,307 +19,143 @@
             background-color: var(--tg-theme-bg-color);
             color: var(--tg-theme-text-color);
             margin: 0; padding: 0;
-            overflow-x: hidden;
         }
 
-        /* Screen Management */
+        /* Screen Transitions */
         .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease-in; }
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* UI Components */
-        .hero-title { font-size: 24px; font-weight: 800; text-align: center; margin: 20px 0 10px; color: var(--tg-theme-button-color); }
-        .hero-sub { text-align: center; opacity: 0.6; font-size: 14px; margin-bottom: 30px; }
-        
+        /* Buttons & Grid */
         .btn {
             background: var(--tg-theme-secondary-bg-color);
-            border-radius: 15px; padding: 20px; margin-bottom: 12px;
+            border-radius: 15px; padding: 18px; margin-bottom: 12px;
             display: flex; align-items: center; justify-content: space-between;
             cursor: pointer; border: 2px solid transparent; transition: 0.2s;
         }
         .btn:active { transform: scale(0.98); border-color: var(--tg-theme-button-color); }
-        .btn-text { font-weight: 600; font-size: 16px; }
-        .btn-icon { font-size: 24px; }
+        .state-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .state-btn { background: var(--tg-theme-secondary-bg-color); border-radius: 12px; padding: 15px 5px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid rgba(0,0,0,0.05); }
 
-        /* News Cards */
-        .news-card {
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 16px; padding: 16px; margin-bottom: 16px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        .badge-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .badge { background: #E3F2FD; color: #1976D2; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; }
-        .gs-tag { color: var(--tg-theme-button-color); font-size: 11px; font-weight: bold; }
-        .news-title { font-size: 17px; font-weight: 700; margin: 0 0 8px 0; line-height: 1.3; }
-        .news-summary { font-size: 14px; line-height: 1.5; opacity: 0.8; margin: 0; }
+        /* Question Cards */
+        .card { background: var(--tg-theme-secondary-bg-color); border-radius: 16px; padding: 18px; margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.05); }
+        .option { width: 100%; text-align: left; padding: 12px; margin-top: 8px; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; background: white; cursor: pointer; }
+        .correct { background: #d4edda !important; color: #155724; }
+        .wrong { background: #f8d7da !important; color: #721c24; }
+        .explanation { margin-top: 10px; padding: 10px; border-top: 1px dashed #ccc; font-size: 12px; display: none; }
 
-        /* Loader */
-        .loader { text-align: center; padding: 40px; opacity: 0.6; font-style: italic; }
-
-        /* Grid for states */
-        .state-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* Two columns */
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .state-btn {
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 12px;
-            padding: 15px 10px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: 0.2s;
-        }
-        
-        .state-btn:active {
-            background: var(--tg-theme-button-color);
-            color: white;
-        }
-
+        .hero-title { font-size: 22px; font-weight: 800; text-align: center; margin: 20px 0 5px; color: var(--tg-theme-button-color); }
+        .hero-sub { text-align: center; opacity: 0.6; font-size: 14px; margin-bottom: 25px; }
     </style>
 </head>
 <body>
 
-    <!-- SCREEN 1: Main Category Selection -->
+    <!-- SCREEN 1: Main Exam Selection -->
     <div id="screen-main" class="screen active">
         <div class="hero-title">AspirantPulse AI</div>
-        <div class="hero-sub">Select your target examination</div>
-        
-        <div class="btn" onclick="fetchNews('UPSC')">
-            <span class="btn-text">UPSC Civil Services</span>
-            <span class="btn-icon">🏛️</span>
-        </div>
-        
-        <div class="btn" onclick="showScreen('screen-states')">
-            <span class="btn-text">State PCS</span>
-            <span class="btn-icon">🗺️</span>
-        </div>
+        <div class="hero-sub">Choose your target goal</div>
+        <div class="btn" onclick="selectExam('UPSC')"><span class="btn-text">UPSC Civil Services</span><span>🏛️</span></div>
+        <div class="btn" onclick="showScreen('screen-states')"><span class="btn-text">State PCS</span><span>🗺️</span></div>
     </div>
 
-    <!-- SCREEN 2: State Selection -->
-    <!-- SCREEN 2: All 28 States -->
+    <!-- SCREEN 2: State Selection (28 States) -->
     <div id="screen-states" class="screen">
         <div class="hero-title">Select State</div>
-        <div class="hero-sub">Choose your target State PCS</div>
-        
-        <div class="state-grid">
-            <div class="state-btn" onclick="fetchNews('PCS', 'Andhra Pradesh')">Andhra Pradesh</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Arunachal Pradesh')">Arunachal Pradesh</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Assam')">Assam</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Bihar')">Bihar</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Chhattisgarh')">Chhattisgarh</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Goa')">Goa</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Gujarat')">Gujarat</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Haryana')">Haryana</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Himachal Pradesh')">Himachal Pradesh</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Jharkhand')">Jharkhand</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Karnataka')">Karnataka</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Kerala')">Kerala</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Madhya Pradesh')">Madhya Pradesh</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Maharashtra')">Maharashtra</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Manipur')">Manipur</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Meghalaya')">Meghalaya</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Mizoram')">Mizoram</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Nagaland')">Nagaland</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Odisha')">Odisha</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Punjab')">Punjab</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Rajasthan')">Rajasthan</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Sikkim')">Sikkim</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Tamil Nadu')">Tamil Nadu</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Telangana')">Telangana</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Tripura')">Tripura</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Uttar Pradesh')">Uttar Pradesh</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'Uttarakhand')">Uttarakhand</div>
-            <div class="state-btn" onclick="fetchNews('PCS', 'West Bengal')">West Bengal</div>
-        </div>
-    
-        <button style="width: 100%; padding: 15px; border: none; background: none; color: var(--tg-theme-button-color); font-weight: 700;" onclick="showScreen('screen-main')">← Back to Exams</button>
+        <div class="state-grid" id="state-list"></div>
+        <button onclick="showScreen('screen-main')" style="width:100%; padding:15px; border:none; background:none; color:var(--tg-theme-button-color); font-weight:700;">← Back</button>
     </div>
 
-
-    <!-- SCREEN 3: News Feed -->
-    <div id="screen-news" class="screen">
-        <div id="news-header" class="hero-title" style="font-size: 20px; text-align: left;">Latest Updates</div>
-        <div id="news-container"></div>
-        <button style="width: 100%; padding: 20px; border: none; background: none; color: var(--tg-theme-button-color); font-weight: 600;" onclick="showScreen('screen-main')">← Back to Selection</button>
+    <!-- SCREEN 2.5: Choice Menu (CA or PYQ) -->
+    <div id="screen-choice" class="screen">
+        <div id="choice-header" class="hero-title">Choose Content</div>
+        <div class="btn" onclick="handleChoice('CA')"><span class="btn-text">Current Affairs</span><span>📰</span></div>
+        <div class="btn" onclick="handleChoice('PYQ')"><span class="btn-text">Previous Year (PYQ)</span><span>📝</span></div>
+        <button onclick="goBackFromChoice()" style="width:100%; padding:15px; border:none; background:none; color:var(--tg-theme-button-color); font-weight:700;">← Back</button>
     </div>
 
-    <!-- SCREEN 4: PYQ List & Filters -->
-    <div id="screen-pyq" class="screen">
-        <div class="hero-title">Previous Year Questions</div>
-        
-        <!-- Filter Section -->
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <select id="pyq-year" class="state-btn" style="flex: 1;" onchange="filterPYQs()">
-                <option value="">All Years</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-            </select>
-            <select id="pyq-subject" class="state-btn" style="flex: 1;" onchange="filterPYQs()">
-                <option value="">All Subjects</option>
-                <option value="Polity">Polity</option>
-                <option value="History">History</option>
-                <option value="Economy">Economy</option>
-            </select>
-        </div>
-    
-        <div id="pyq-container"></div>
-        <button class="btn" style="background: none; color: var(--tg-theme-button-color);" onclick="showScreen('screen-main')">← Back to Home</button>
+    <!-- SCREEN 3: Feeds (News & PYQ) -->
+    <div id="screen-feed" class="screen">
+        <div id="feed-header" class="hero-title" style="text-align:left; font-size:18px;">Latest</div>
+        <div id="feed-container"></div>
+        <button onclick="showScreen('screen-choice')" style="width:100%; padding:15px; border:none; background:none; color:var(--tg-theme-button-color); font-weight:700;">← Back</button>
     </div>
-    
-    <style>
-        /* PYQ Card Styles */
-        .pyq-card {
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 16px; padding: 20px; margin-bottom: 16px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        .option-btn {
-            width: 100%; text-align: left; padding: 12px; margin-top: 8px;
-            border: 1px solid rgba(0,0,0,0.1); border-radius: 10px;
-            background: white; cursor: pointer; transition: 0.2s;
-        }
-        .option-btn.correct { background: #d4edda; border-color: #c3e6cb; color: #155724; }
-        .option-btn.wrong { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
-        .explanation {
-            margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;
-            font-size: 13px; color: #666; display: none;
-        }
-    </style>
 
-    <script>        
+    <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Full height
+        tg.expand();
         tg.ready();
 
-        const BACKEND_URL = "https://aspirant-pulse-app-production.up.railway.app/api/news";
+        const API_BASE = "https://railway.app";
+        let currentType = '';
+        let currentState = '';
 
-        function showScreen(screenId) {
+        const states = ["Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"];
+
+        // Initialize State Buttons
+        document.getElementById('state-list').innerHTML = states.map(s => `<div class="state-btn" onclick="selectExam('PCS', '${s}')">${s}</div>`).join('');
+
+        function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            window.scrollTo(0, 0);
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0,0);
         }
 
-        async function fetchNews(type, state = '') {
-            const container = document.getElementById('news-container');
-            const header = document.getElementById('news-header');
-            
-            header.innerText = state ? `${state} PCS Updates` : `Top 5 UPSC Updates`;
-            container.innerHTML = `<div class="loader">Fetching latest...</div>`;
-            showScreen('screen-news');
-        
-            try {
-                const url = `${BACKEND_URL}?type=${type}&state=${state}`;
-                // Adding mode: 'cors' helps some browsers handle the cross-origin request
-                const response = await fetch(url, { mode: 'cors' });
-                
-                if (!response.ok) {
-                    throw new Error(`Server responded with ${response.status}`);
-                }
-                
-                const data = await response.json();
-        
-                if (!data || data.length === 0) {
-                    container.innerHTML = `<div class="loader">No news found for this category.</div>`;
-                    return;
-                }
-        
-                container.innerHTML = data.map(item => `
-                    <div class="news-card">
-                        <div class="badge-row">
-                            <span class="badge">${item.exam_type}</span>
-                            <span class="gs-tag">${item.gs_paper || 'GS'}</span>
-                        </div>
-                        <h3 class="news-title">${item.headline}</h3>
-                        <p class="news-summary">${item.ai_summary}</p>
-                    </div>
-                `).join('');
-        
-            } catch (error) {
-                console.error("Fetch failed:", error);
-                // This alert will show up on your phone so you can see the real error
-                container.innerHTML = `<div class="loader" style="color:red;">
-                    Connection Error: ${error.message}<br>
-                    <small>Check if Backend is running at Railway</small>
-                </div>`;
-            }
+        function selectExam(type, state = '') {
+            currentType = type;
+            currentState = state;
+            document.getElementById('choice-header').innerText = state || "UPSC Exam";
+            showScreen('screen-choice');
         }
 
-        const PYQ_API_URL = "https://aspirant-pulse-app-production.up.railway.app/api/pyqs";
-    
-        async function fetchPYQs(type, state = '') {
-            const container = document.getElementById('pyq-container');
-            const year = document.getElementById('pyq-year').value;
-            const subject = document.getElementById('pyq-subject').value;
-            
-            container.innerHTML = `<div class="loader">Loading PYQs...</div>`;
-            showScreen('screen-pyq');
-    
+        function goBackFromChoice() { currentType === 'UPSC' ? showScreen('screen-main') : showScreen('screen-states'); }
+
+        async function handleChoice(choice) {
+            const container = document.getElementById('feed-container');
+            const header = document.getElementById('feed-header');
+            container.innerHTML = "<p style='text-align:center;'>Loading...</p>";
+            showScreen('screen-feed');
+
+            const url = choice === 'CA' 
+                ? `${API_BASE}/news?type=${currentType}&state=${currentState}`
+                : `${API_BASE}/pyqs?type=${currentType}&state=${currentState}`;
+
             try {
-                let url = `${PYQ_API_URL}?type=${type}&state=${state}`;
-                if (year) url += `&year=${year}`;
-                if (subject) url += `&subject=${subject}`;
-    
-                const response = await fetch(url);
-                const data = await response.json();
-    
-                if (data.length === 0) {
-                    container.innerHTML = `<div class="loader">No questions found for this selection.</div>`;
-                    return;
-                }
-    
-                container.innerHTML = data.map((q, idx) => `
-                    <div class="pyq-card">
-                        <div class="badge-row">
-                            <span class="badge">${q.year}</span>
-                            <span class="gs-tag">${q.subject}</span>
-                        </div>
-                        <p style="font-weight: 600; margin-bottom: 15px;">Q. ${q.question_text}</p>
-                        
-                        <!-- Options -->
-                        <button class="option-btn" onclick="checkAnswer(this, '${q.correct_option}', 'A', ${idx})">A) ${q.options.A}</button>
-                        <button class="option-btn" onclick="checkAnswer(this, '${q.correct_option}', 'B', ${idx})">B) ${q.options.B}</button>
-                        <button class="option-btn" onclick="checkAnswer(this, '${q.correct_option}', 'C', ${idx})">C) ${q.options.C}</button>
-                        <button class="option-btn" onclick="checkAnswer(this, '${q.correct_option}', 'D', ${idx})">D) ${q.options.D}</button>
-                        
-                        <div id="expl-${idx}" class="explanation">
-                            <strong>Explanation:</strong> ${q.explanation}
-                        </div>
-                    </div>
-                `).join('');
-    
-            } catch (error) {
-                container.innerHTML = `<div class="loader" style="color:red;">Failed to fetch PYQs.</div>`;
-            }
+                const res = await fetch(url);
+                const data = await res.json();
+                header.innerText = choice === 'CA' ? "Latest Updates" : "PYQ Practice";
+                
+                if (data.length === 0) container.innerHTML = "<p style='text-align:center;'>No records found.</p>";
+                else choice === 'CA' ? renderNews(data, container) : renderPYQs(data, container);
+            } catch (e) { container.innerHTML = "<p style='color:red;'>Connection Error.</p>"; }
         }
-    
-        function checkAnswer(btn, correct, selected, idx) {
+
+        function renderNews(data, div) {
+            div.innerHTML = data.map(n => `<div class="card">
+                <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; margin-bottom:5px;">
+                    <span style="color:#1976d2;">${n.exam_type}</span><span>${n.gs_paper || 'GS'}</span>
+                </div>
+                <h3 style="font-size:16px; margin:0 0 8px;">${n.headline}</h3>
+                <p style="font-size:13px; opacity:0.8; margin:0;">${n.ai_summary}</p>
+            </div>`).join('');
+        }
+
+        function renderPYQs(data, div) {
+            div.innerHTML = data.map((q, i) => `<div class="card">
+                <div style="font-size:11px; font-weight:700; margin-bottom:10px;">${q.year} | ${q.subject}</div>
+                <p style="font-weight:600; margin-bottom:12px;">${q.question_text}</p>
+                ${Object.entries(q.options).map(([k, v]) => `
+                    <button class="option" onclick="check(this, '${q.correct_option}', '${k}', ${i})">${k}) ${v}</button>
+                `).join('')}
+                <div id="expl-${i}" class="explanation"><strong>Explanation:</strong> ${q.explanation}</div>
+            </div>`).join('');
+        }
+
+        function check(btn, correct, sel, id) {
             const card = btn.parentElement;
-            const allBtns = card.querySelectorAll('.option-btn');
-            
-            // Disable further clicks
-            allBtns.forEach(b => b.disabled = true);
-            
-            if (selected === correct) {
-                btn.classList.add('correct');
-                tg.HapticFeedback.notificationOccurred('success');
-            } else {
-                btn.classList.add('wrong');
-                tg.HapticFeedback.notificationOccurred('error');
-                // Show the correct one
-                allBtns.forEach(b => {
-                    if (b.innerText.startsWith(correct)) b.classList.add('correct');
-                });
-            }
-            
-            // Reveal explanation
-            document.getElementById(`expl-${idx}`).style.display = 'block';
+            card.querySelectorAll('.option').forEach(b => b.disabled = true);
+            if (sel === correct) { btn.classList.add('correct'); tg.HapticFeedback.notificationOccurred('success'); } 
+            else { btn.classList.add('wrong'); tg.HapticFeedback.notificationOccurred('error'); card.querySelectorAll('.option').forEach(b => { if(b.innerText.startsWith(correct)) b.classList.add('correct'); }); }
+            document.getElementById(`expl-${id}`).style.display = 'block';
         }
     </script>
 </body>
