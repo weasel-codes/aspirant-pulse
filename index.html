@@ -148,8 +148,52 @@
         <div id="news-container"></div>
         <button style="width: 100%; padding: 20px; border: none; background: none; color: var(--tg-theme-button-color); font-weight: 600;" onclick="showScreen('screen-main')">← Back to Selection</button>
     </div>
+
+    <!-- SCREEN 4: PYQ List & Filters -->
+    <div id="screen-pyq" class="screen">
+        <div class="hero-title">Previous Year Questions</div>
+        
+        <!-- Filter Section -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <select id="pyq-year" class="state-btn" style="flex: 1;" onchange="filterPYQs()">
+                <option value="">All Years</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+            </select>
+            <select id="pyq-subject" class="state-btn" style="flex: 1;" onchange="filterPYQs()">
+                <option value="">All Subjects</option>
+                <option value="Polity">Polity</option>
+                <option value="History">History</option>
+                <option value="Economy">Economy</option>
+            </select>
+        </div>
     
-    <script>
+        <div id="pyq-container"></div>
+        <button class="btn" style="background: none; color: var(--tg-theme-button-color);" onclick="showScreen('screen-main')">← Back to Home</button>
+    </div>
+    
+    <style>
+        /* PYQ Card Styles */
+        .pyq-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px; padding: 20px; margin-bottom: 16px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .option-btn {
+            width: 100%; text-align: left; padding: 12px; margin-top: 8px;
+            border: 1px solid rgba(0,0,0,0.1); border-radius: 10px;
+            background: white; cursor: pointer; transition: 0.2s;
+        }
+        .option-btn.correct { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .option-btn.wrong { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .explanation {
+            margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;
+            font-size: 13px; color: #666; display: none;
+        }
+    </style>
+
+    <script>        
         const tg = window.Telegram.WebApp;
         tg.expand(); // Full height
         tg.ready();
@@ -205,6 +249,77 @@
                     <small>Check if Backend is running at Railway</small>
                 </div>`;
             }
+        }
+
+                const PYQ_API_URL = "https://railway.app";
+    
+        async function fetchPYQs(type, state = '') {
+            const container = document.getElementById('pyq-container');
+            const year = document.getElementById('pyq-year').value;
+            const subject = document.getElementById('pyq-subject').value;
+            
+            container.innerHTML = `<div class="loader">Loading PYQs...</div>`;
+            showScreen('screen-pyq');
+    
+            try {
+                let url = `${PYQ_API_URL}?type=${type}&state=${state}`;
+                if (year) url += `&year=${year}`;
+                if (subject) url += `&subject=${subject}`;
+    
+                const response = await fetch(url);
+                const data = await response.json();
+    
+                if (data.length === 0) {
+                    container.innerHTML = `<div class="loader">No questions found for this selection.</div>`;
+                    return;
+                }
+    
+                container.innerHTML = data.map((q, idx) => `
+                    <div class="pyq-card">
+                        <div class="badge-row">
+                            <span class="badge">${q.year}</span>
+                            <span class="gs-tag">${q.subject}</span>
+                        </div>
+                        <p style="font-weight: 600; margin-bottom: 15px;">Q. ${q.question_text}</p>
+                        
+                        <!-- Options -->
+                        <button class="option-btn" onclick="checkAnswer(this, '${q.correct_option}', 'A', ${idx})">A) ${q.options.A}</button>
+                        <button class="option-btn" onclick="checkAnswer(this, '${q.correct_option}', 'B', ${idx})">B) ${q.options.B}</button>
+                        <button class="option-btn" onclick="checkAnswer(this, '${q.correct_option}', 'C', ${idx})">C) ${q.options.C}</button>
+                        <button class="option-btn" onclick="checkAnswer(this, '${q.correct_option}', 'D', ${idx})">D) ${q.options.D}</button>
+                        
+                        <div id="expl-${idx}" class="explanation">
+                            <strong>Explanation:</strong> ${q.explanation}
+                        </div>
+                    </div>
+                `).join('');
+    
+            } catch (error) {
+                container.innerHTML = `<div class="loader" style="color:red;">Failed to fetch PYQs.</div>`;
+            }
+        }
+    
+        function checkAnswer(btn, correct, selected, idx) {
+            const card = btn.parentElement;
+            const allBtns = card.querySelectorAll('.option-btn');
+            
+            // Disable further clicks
+            allBtns.forEach(b => b.disabled = true);
+            
+            if (selected === correct) {
+                btn.classList.add('correct');
+                tg.HapticFeedback.notificationOccurred('success');
+            } else {
+                btn.classList.add('wrong');
+                tg.HapticFeedback.notificationOccurred('error');
+                // Show the correct one
+                allBtns.forEach(b => {
+                    if (b.innerText.startsWith(correct)) b.classList.add('correct');
+                });
+            }
+            
+            // Reveal explanation
+            document.getElementById(`expl-${idx}`).style.display = 'block';
         }
     </script>
 </body>
