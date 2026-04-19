@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>AspirantPulse AI</title>
     <!-- Telegram WebApp SDK -->
-    <script src="https://telegram.org"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --tg-theme-bg-color: #ffffff;
@@ -99,7 +99,7 @@
         <div id="news-container"></div>
         <button style="width: 100%; padding: 20px; border: none; background: none; color: var(--tg-theme-button-color); font-weight: 600;" onclick="showScreen('screen-main')">← Back to Selection</button>
     </div>
-
+    
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand(); // Full height
@@ -118,36 +118,43 @@
             const header = document.getElementById('news-header');
             
             header.innerText = state ? `${state} PCS Updates` : `Top 5 UPSC Updates`;
-            container.innerHTML = `<div class="loader">Fetching latest from Supabase...</div>`;
+            container.innerHTML = `<div class="loader">Fetching latest...</div>`;
             showScreen('screen-news');
-
+        
             try {
                 const url = `${BACKEND_URL}?type=${type}&state=${state}`;
-                const response = await fetch(url);
+                // Adding mode: 'cors' helps some browsers handle the cross-origin request
+                const response = await fetch(url, { mode: 'cors' });
                 
-                if (!response.ok) throw new Error("Backend error");
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
                 
                 const data = await response.json();
-
+        
                 if (!data || data.length === 0) {
-                    container.innerHTML = `<div class="loader">No news found for this category today.</div>`;
+                    container.innerHTML = `<div class="loader">No news found for this category.</div>`;
                     return;
                 }
-
+        
                 container.innerHTML = data.map(item => `
                     <div class="news-card">
                         <div class="badge-row">
                             <span class="badge">${item.exam_type}</span>
-                            <span class="gs-tag">${item.gs_paper || 'Current Affairs'}</span>
+                            <span class="gs-tag">${item.gs_paper || 'GS'}</span>
                         </div>
                         <h3 class="news-title">${item.headline}</h3>
                         <p class="news-summary">${item.ai_summary}</p>
                     </div>
                 `).join('');
-
+        
             } catch (error) {
                 console.error("Fetch failed:", error);
-                container.innerHTML = `<div class="loader" style="color:red;">Failed to connect to Railway backend. Please try again.</div>`;
+                // This alert will show up on your phone so you can see the real error
+                container.innerHTML = `<div class="loader" style="color:red;">
+                    Connection Error: ${error.message}<br>
+                    <small>Check if Backend is running at Railway</small>
+                </div>`;
             }
         }
     </script>
